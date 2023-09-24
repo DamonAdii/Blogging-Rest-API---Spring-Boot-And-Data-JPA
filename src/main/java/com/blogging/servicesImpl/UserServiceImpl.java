@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.blogging.Register.password.ForgotPasswordRepo;
+import com.blogging.Register.password.ForgotPasswordRequest;
 import com.blogging.Register.verification.VerificationRepo;
 import com.blogging.Register.verification.VerificationRequest;
 import com.blogging.email.EmailService;
@@ -37,6 +39,9 @@ public class UserServiceImpl implements UserService{
 	
 	@Autowired
 	private EmailService emailtService;
+	
+	@Autowired
+	private ForgotPasswordRepo forgotPasswordRepo;
 	
 	@Override
 	public UserDto createUser(UserDto userDato) {
@@ -184,6 +189,31 @@ public class UserServiceImpl implements UserService{
 		
 		return userdto;
 		
+	}
+
+
+
+	@Override
+	public String forgotpassword(String email) {
+		
+		 Optional<User> findByEmail = this.userRepo.findByEmail(email);
+		   
+		   if(findByEmail.isPresent()) {
+			 
+			   User user = findByEmail.get();
+			// now we have to generate a token for forgot password
+			var forgotpasswordUrl = new ForgotPasswordRequest(user);
+			   
+			//now save the forgot password verification token in verification table
+			ForgotPasswordRequest savedPasswordToken = this.forgotPasswordRepo.save(forgotpasswordUrl);
+				
+			//sent confirmation link to confirm account
+			this.emailtService.simpleMailMessageForForgotpassword(user.getName(), user.getEmail(), savedPasswordToken.getToken());
+			
+			return "Please visit your mail account to change password";
+		   }
+		
+		return "Email is not present !please try with anoyher";
 	}
 
 

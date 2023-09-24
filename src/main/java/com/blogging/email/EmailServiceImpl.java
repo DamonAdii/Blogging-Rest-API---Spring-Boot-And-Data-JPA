@@ -55,6 +55,38 @@ public class EmailServiceImpl implements EmailService{
 		
 		
 	}
+
+	@Override
+	public void simpleMailMessageForForgotpassword(String userName, String toEmail, String emailToken) {
+		
+		try {
+			
+			// step 1 : create a instance of a SimpleMailMessage
+			SimpleMailMessage message = new SimpleMailMessage();
+			
+			// step 2 : set subject into a message
+			message.setSubject(EmailConstants.FORGOT_PASSWORD_ACCOUNT_VERIFICATION);
+			
+			// step 3 : set from email you want to send
+			message.setFrom(fromEmail);
+			
+			//step 4 : set To you want to send mail
+			message.setTo(toEmail);
+			
+			//step 5 : set text message you want to send
+			message.setText(EmailUtils.getForgotPasswordEmailMessage(userName, host, emailToken));
+			
+			// step 6 : now send the mail
+			mailSender.send(message);
+			
+			
+		} catch (Exception e) {
+			 
+			System.out.println(e.getMessage());
+	        throw new RuntimeException(e.getMessage());
+		}
+		
+	}
 	
 	
 	

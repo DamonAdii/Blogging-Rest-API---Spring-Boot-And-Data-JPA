@@ -2,6 +2,7 @@ package com.blogging.services;
 
 import java.util.List;
 
+
 import com.blogging.payloads.UserDto;
 
 public interface UserService {
@@ -12,5 +13,6 @@ public interface UserService {
 	UserDto getUserById(int userId);
 	List<UserDto> getAllUser();
 	void deletUser(int userID);
+	public String forgotpassword(String email);
 
 }

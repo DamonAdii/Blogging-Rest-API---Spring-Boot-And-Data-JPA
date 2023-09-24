@@ -32,6 +32,7 @@ public class AppSecurityConfig {
 			"/api/category/{catId}/posts",// get all post by category id
 			"/api/posts/{postId}",// get single post by post id
 			"/api/posts/search/{title}", // search post by title keyword
+			"/api/forgot-password",// methos for change password
             };
 	
 	private final String[] SECURED_URLs = {
