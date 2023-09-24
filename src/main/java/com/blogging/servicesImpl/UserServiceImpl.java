@@ -1,12 +1,18 @@
 package com.blogging.servicesImpl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.blogging.Register.verification.VerificationRepo;
+import com.blogging.Register.verification.VerificationRequest;
+import com.blogging.email.EmailService;
 import com.blogging.entities.User;
 import com.blogging.exceptions.ResourceNotFoundException;
 import com.blogging.payloads.UserDto;
@@ -21,16 +27,56 @@ public class UserServiceImpl implements UserService{
 	private UserRepo userRepo;
 	
 	@Autowired
-	ModelMapper modelMapper;
+	private ModelMapper modelMapper;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private VerificationRepo verificationRepo;
+	
+	@Autowired
+	private EmailService emailtService;
 	
 	@Override
 	public UserDto createUser(UserDto userDato) {
-			
-			User user = this.dtoToUserEntiry(userDato);
-			
-			User savedUser = this.userRepo.save(user);
 		
-			return this.userToUserDTO(savedUser);
+		   // first check that user email is already present or not
+		
+		   Optional<User> findByEmail = this.userRepo.findByEmail(userDato.getEmail());
+		   
+		   if(findByEmail.isPresent()) {
+			 
+			   throw new RuntimeException("Email is already in use !please try with anoyher");
+		   }
+		   else
+		   {
+			   
+			   //step 2 : save the user in db
+			    User user = this.dtoToUserEntiry(userDato);
+				
+				user.setPassword(passwordEncoder.encode(userDato.getPassword()));
+				
+				User savedUser = this.userRepo.save(user);
+				
+				
+				//step 3 : genertae vaerification token
+				
+				var verficationUrl = new VerificationRequest(savedUser);
+				
+				//now save the verification token in vercation table
+				VerificationRequest savedVerification = this.verificationRepo.save(verficationUrl);
+				
+				
+				//sent confirmation link to confirm account
+				this.emailtService.simpleMailMessage(userDato.getName(), userDato.getEmail(), savedVerification.getToken());
+				
+				
+				return this.userToUserDTO(savedUser);
+			   
+		   }
+			
+			
 	}
 	
 	
@@ -45,7 +91,7 @@ public class UserServiceImpl implements UserService{
 		user.setName(userDto.getName());
 		user.setEmail(userDto.getEmail());
 		user.setAbout(userDto.getAbout());
-		user.setPassword(userDto.getPassword());
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		
 		User updatedUser = this.userRepo.save(user);
 		

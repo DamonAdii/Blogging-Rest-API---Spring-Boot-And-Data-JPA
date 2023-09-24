@@ -1,6 +1,9 @@
 package com.blogging.controllers;
 
+import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.blogging.ApiResponse.HttpResponse;
 import com.blogging.payloads.UserDto;
 import com.blogging.services.UserService;
 import com.blogging.utils.ApiResponse;
@@ -30,11 +34,19 @@ public class UserController {
 	
 	//signup or register user function
 	@PostMapping("/signup")
-	public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto){
+	public ResponseEntity<HttpResponse> createUser(@Valid @RequestBody UserDto userDto){
 		
 		UserDto createUserDto = this.userService.createUser(userDto);
 		
-		return new ResponseEntity<>(createUserDto,HttpStatus.CREATED);
+		return ResponseEntity.created(URI.create("")).body(
+				HttpResponse.builder()
+				.timeStamp(LocalDateTime.now().toString())
+				.data(Map.of("user",createUserDto))
+				.message("Success!  Please, check your email for to complete your registration")
+				.status(HttpStatus.CREATED)
+				.statusCode(HttpStatus.CREATED.value())
+				.build()
+				);
 	}
 	
 	
