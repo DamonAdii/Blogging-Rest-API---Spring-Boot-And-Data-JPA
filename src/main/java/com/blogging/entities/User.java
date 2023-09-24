@@ -38,6 +38,8 @@ public class User {
 	
 	private String roles;
 	
+	private boolean isEnabled;
+	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
 	private List<Post> posts = new ArrayList<>();
 

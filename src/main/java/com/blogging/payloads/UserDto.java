@@ -33,6 +33,8 @@ public class UserDto {
 	@NotEmpty
 	private String about;
 	
+	private boolean isEnabled = false;
+	
 	private String roles;
 	
 

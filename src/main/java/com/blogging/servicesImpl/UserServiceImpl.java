@@ -1,12 +1,12 @@
 package com.blogging.servicesImpl;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +57,8 @@ public class UserServiceImpl implements UserService{
 				
 				user.setPassword(passwordEncoder.encode(userDato.getPassword()));
 				
+				user.setEnabled(false);
+				
 				User savedUser = this.userRepo.save(user);
 				
 				
@@ -80,6 +82,26 @@ public class UserServiceImpl implements UserService{
 	}
 	
 	
+	
+	@Override
+	public String validateToken(String theToken) {
+		 VerificationRequest token = verificationRepo.findByToken(theToken);
+	        if(token == null){
+	            return "Invalid verification token";
+	        }
+	        
+	        User user = token.getUser();
+	        
+	        Calendar calendar = Calendar.getInstance();
+	        if ((token.getExpirationTime().getTime() - calendar.getTime().getTime()) <= 0){
+	        	verificationRepo.delete(token);
+	            return "Token already expired";
+	        }
+	        
+	        user.setEnabled(true);
+	        userRepo.save(user);
+	        return "valid";
+	}
 
 	
 

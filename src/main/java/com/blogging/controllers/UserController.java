@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.blogging.ApiResponse.HttpResponse;
+import com.blogging.Register.verification.VerificationRepo;
+import com.blogging.Register.verification.VerificationRequest;
 import com.blogging.payloads.UserDto;
 import com.blogging.services.UserService;
 import com.blogging.utils.ApiResponse;
@@ -31,6 +34,8 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 	
+	@Autowired
+	private VerificationRepo verificationRepo;
 	
 	//signup or register user function
 	@PostMapping("/signup")
@@ -48,6 +53,30 @@ public class UserController {
 				.build()
 				);
 	}
+	
+	
+	@GetMapping
+	public String loginUser(@RequestParam("token") String token) {
+		
+		//first validate token
+		
+		VerificationRequest vierifedToken = this.verificationRepo.findByToken(token);
+		
+		if(vierifedToken.getUser().isEnabled()) {
+			
+			return "This account has already been verified, please, login.";
+		}
+			
+		String validateToken = this.userService.validateToken(token);
+		
+		if (validateToken.equalsIgnoreCase("valid")){
+	            return "Email verified successfully. Now you can login to your account";
+	        }
+	       
+		return "Invalid verification token";
+
+	}
+	
 	
 	
 	//update user function
